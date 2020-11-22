@@ -43,34 +43,33 @@
             <div class="col-lg-3 col-sm-12 col-xs-12">
               <!-- Drop Down & Labelling Section-->
               <form class="form" method="POST" action='chart_data.php'>
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <label class="input-group-text" for="user">Clinician ID</label>
-                    </div>
-                    <select class="custom-select chart-parameter" id="user">
-                    <?php foreach($staff as $s){?>
-                      <option value="<?php echo $s->id; ?>"><?php echo $s->code; ?></option>
-                    <?php } ?>
+                <div class="form-group">
+                    <label class="" for="user">Clinician ID:</label>
+                    <select class="form-control chart-parameter" id="user">
+                      <?php foreach($staff as $s){?>
+                        <option value="<?php echo $s->id; ?>"><?php echo $s->code; ?></option>
+                      <?php } ?>
                     </select>
-                  </div>
+                </div>
 
                   <!-- Start Date -->
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <label class="input-group-text" for="start_date">Start Date</label>
-                    </div>
-                    <input type="text" class="form-control datepicker chart-parameter" id="start_date" name="start_date"/>
+                  <div class="form-group">
+                      <label class="" for="start_date">Start Date:</label>
+                      <input type="text" class="form-control datepicker chart-parameter" id="start_date" name="start_date"/>
                   </div>
 
                   <!-- End Date -->
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <label class="input-group-text" for="end_date"> End Date</label>
-                    </div>
-                    <input type="text" class="form-control datepicker chart-parameter" id="end_date" name="end_date"/>
+                  <div class="form-group">
+                      <label class="" for="end_date"> End Date:</label>
+                      <input type="text" class="form-control datepicker chart-parameter" id="end_date" name="end_date"/>
                   </div>
 
               </form>
+              <!-- Summary Table-->
+              <table class="table table-dark" id="summary-table" style="display: none;">
+                <tr><th>Total Duration:</th></tr>
+                <tr><td></td></tr>
+              </table>
             </div>
             <div class="col-lg-9 col-sm-12 col-xs-12">
               <!-- Chart Rendering Section -->
@@ -116,8 +115,8 @@
               alert('An error occured, refresh the page and try again');
               return false;
             }
-            }).responseText;
-            console.log(dataString);
+          }).responseText;
+          //console.log(dataString);
           let jsonData = JSON.parse(dataString);
           let options = {
             title: 'Clinicians Activity Log',
@@ -125,23 +124,23 @@
             width: 950,
             height: 550
           };
-          let data = new google.visualization.arrayToDataTable(jsonData);
+          let data = new google.visualization.arrayToDataTable(jsonData.datatable);
           let chart = new google.visualization.PieChart(document.getElementById('piechart'));
           chart.draw(data, options);
+          //ATTACH SUMMARY
+          let $smry_text = jsonData.summary.hours+" Hours, "+jsonData.summary.minutes+" Minutes";
+          $('#summary-table td').html($smry_text);
+          $('#summary-table').show();
       }
 
       /* Event listener for user selector */
       $('.chart-parameter').change(function(){
         // Ensure the start date is provided
         if($('#start_date').val()===''){
-          alert('All parameters must be provided');
-          //$('#start_date').focus();
           return false;
         }
         // Ensure the end date is provided
         if($('#end_date').val()===''){
-          alert('All parameters must be provided');
-          //$('#end_date').focus();
           return false;
         }
         google.charts.load('current', {'packages':['corechart']});

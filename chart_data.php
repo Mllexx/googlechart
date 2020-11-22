@@ -6,7 +6,7 @@ if(isset($_POST['user_id'])){
   $startdate = $_POST['startdate'];
   $enddate = $_POST['enddate'];
   ## GET USER DATA
-  $d = $c->getActivityLog($user,$startdate,$enddate,'minutes');
+  $d = $c->getActivityLog($user,$startdate,$enddate,'hours');
   echo json_encode($d);
 }
 $staff = $c->getStaffList();
@@ -16,7 +16,7 @@ $staff = $c->getStaffList();
 */
 class ChartData{
 
-   const DB_HOST = 'localhost';
+   const DB_HOST = 'localhost:3306';
    const DB_USER = 'root';
    const DB_PASS = '';
    const DB_NAME = 'googlecharts';
@@ -42,13 +42,18 @@ class ChartData{
       $st->bindParam(3,$enddate,PDO::PARAM_STR);
       $st->execute();
       $datatable = [['Activity','Hours']];
-
+      $hours = 0;
+      $minutes = 0;
       while($row = $st->fetch(PDO::FETCH_ASSOC)) {
         $row = (object)$row;
         ## convert all period to minutes
         $time = explode(':',$row->length);
         $time_in_minutes = ((int)$time[0]*60)+((int)$time[1]);
         $time_units = $time_in_minutes; ## DEFAULT
+
+        $hours += (int)$time[0];
+        $minutes += (int)$time[1];
+
         if($timeunit==='hours'){
           $time_units = round(($time_in_minutes/60),2);
         }
@@ -58,6 +63,10 @@ class ChartData{
         $i = [$row->activity,$time_units];
         array_push($datatable,$i);
       }
-      return $datatable;
+
+      return [
+        'datatable'=>$datatable,
+        'summary'=>['hours'=>$hours,'minutes'=>$minutes],
+      ];
   }
 }
